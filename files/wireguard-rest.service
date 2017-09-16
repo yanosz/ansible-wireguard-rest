@@ -1,0 +1,11 @@
+# Cf http://www.stderr.nl/Blog/Software/Rails/RailsSocketActivation.html
+# Use webrick (single process / single thread), since rewriting and
+# reloading wireguard-configurations concurrently is bad per se ;-).
+
+[Service]
+WorkingDirectory=/usr/local/wireguard-rest/lib
+ExecStart=/usr/bin/rackup -s puma -o 127.0.0.1 -p 8172 -E production
+User=wireguard-rest
+
+[Install]
+WantedBy=multi-user.target

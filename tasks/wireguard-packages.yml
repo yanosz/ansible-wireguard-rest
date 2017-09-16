@@ -1,0 +1,54 @@
+# Installing wireguard following the instructions at
+# https://www.wireguard.com/install/
+# Idea: Add Unstable repositories, pin the priority, install wireguard
+#
+- blockinfile:
+    dest: '/etc/apt/preferences.d/limit-unstable'
+    block: |
+      Package: *
+      Pin: release a=unstable
+      Pin-Priority: 150
+    create: yes
+    owner: root
+    group: root
+    mode: 0644
+
+- name: "Register Debian unstable using APT"
+  apt_repository:
+    repo: deb http://deb.debian.org/debian/ unstable main
+    state: present
+    filename: 'unstable-wireguard'
+    update_cache: yes
+
+- name: "Install wireguard-dkms wireguard-tools"
+  apt: name={{ item }} state=present
+  with_items:
+  - wireguard-dkms
+  - wireguard-tools
+
+- name: "Create /etc/network/interfaces.d/wireguard-rest from template"
+  template:
+    src: files/wireguard.interface
+    dest: /etc/network/interfaces.d/wireguard-rest
+    owner: root
+    group: root
+    mode: '0644'
+  notify:
+  - reload interface
+
+- name: "Generat private wireguard key"
+  shell: 'umask 077 && wg genkey > {{ wireguard_rest.app.secret_key_file }} && chown wireguard-rest {{ wireguard_rest.app.secret_key_file }}'
+  args:
+    creates: "{{ wireguard_rest.app.secret_key_file }}"
+  notify:
+  - update wireguard_configuration
+  - derive publickey
+
+- name: "Fix ownership"
+  file:
+    path: /usr/local/wireguard-rest
+    owner: wireguard-rest
+    group: wireguard-rest
+    recurse: yes
+  notify:
+  - update wireguard_configuration

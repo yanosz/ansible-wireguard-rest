@@ -1,0 +1,16 @@
+# Cf http://www.stderr.nl/Blog/Software/Rails/RailsSocketActivation.html
+[Unit]
+Description=Wireguard-rest API
+
+[Socket]
+ListenStream=127.0.0.1:8172
+
+# Socket options matching Puma defaults 
+NoDelay=true
+ReusePort=true
+Backlog=1024
+
+Restart=always
+
+[Install]
+WantedBy=sockets.target

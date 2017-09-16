@@ -1,0 +1,11 @@
+auto wg-rest
+iface wg-rest inet static
+  address {{ wireguard_rest.server_ipv4 }}
+  netmask {{ wireguard_rest.netmask_ipv4 }}
+  pre-up /sbin/ip link add dev wg-rest type wireguard
+  post-up /usr/bin/wg setconf wg-rest /etc/wireguard/wg-rest.conf
+  post-down /sbin/ip link del dev wg-rest
+
+iface wg-rest inet6 static
+ address {{ wireguard_rest.server_ipv6 }}
+ netmask {{ wireguard_rest.netmask_ipv6 }}

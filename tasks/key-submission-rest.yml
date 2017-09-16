@@ -1,0 +1,60 @@
+--- # Configure nginx service for key submission
+- name: install Ruby Packages + git
+  apt: name={{ item }} state=present update_cache=yes
+  with_items:
+  - rails
+  - ruby-sqlite3
+  - git
+  - ruby-rack
+  - ruby-concurrent
+  - puma
+
+- name: "Deploy from https://github.com/yanosz/wireguard-rest.git"
+  become: true
+  become_user: wireguard-rest
+  become_method: sudo
+  git:
+    repo: https://github.com/yanosz/wireguard-rest.git
+    dest: /usr/local/wireguard-rest/lib
+    clone: yes
+    update: yes
+    force: yes
+  notify:
+  - update wireguard_configuration
+  - update webapp_db
+  - restart wireguard-rest
+
+- name: "Register systemd service and socket"
+  copy:
+    src: files/{{ item }}
+    dest: /etc/systemd/system/{{ item }}
+    owner: root
+    group: root
+  with_items:
+  - wireguard-rest.service
+  - wireguard-rest.socket
+  notify:
+  - update wireguard_configuration
+  - reload wireguard-rest
+
+- name: "Configure: app.yml"
+  template:
+    src: files/app.yml.j2
+    dest: /usr/local/wireguard-rest/lib/config/app.yml
+    owner: root
+    group: root
+    mode: '0644'
+  notify:
+  - update wireguard_configuration
+  - reload wireguard-rest
+
+- name: "Configure /usr/local/wireguard-rest/lib/conf/rest.conf.erb"
+  copy:
+    src: files/rest.conf.erb
+    dest: /usr/local/wireguard-rest/lib/config/rest.conf.erb
+    owner: wireguard-rest
+    group: wireguard-rest
+    mode: '0644'
+  notify:
+  - update wireguard_configuration
+  - reload wireguard-rest

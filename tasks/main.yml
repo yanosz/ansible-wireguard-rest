@@ -1,0 +1,22 @@
+--- #Main Part
+- group:
+    name: wireguard-rest
+    state: present
+
+- name: Create user wireguard-rest
+  user:
+    name: wireguard-rest
+    comment: "System user"
+    group: wireguard-rest
+    home: /usr/local/wireguard-rest
+
+- name: "Sudo: wireguard-rest may reload wg"
+  copy:
+    src: files/sudoers
+    dest: "/etc/sudoers.d/wireguard-rest"
+    owner: root
+    group: root
+    mode: 0600
+
+- include: wireguard-packages.yml
+- include: key-submission-rest.yml

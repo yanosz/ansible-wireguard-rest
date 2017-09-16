@@ -1,0 +1,24 @@
+---
+- name: reload wireguard-rest
+  systemd:
+    state: restarted
+    daemon_reload: yes
+    name: wireguard-rest
+- name: restart wireguard-rest
+  service: name=wireguard-rest state=restarted enabled=yes
+- name: reload interface
+  command: bash -c "ifdown wg-rest ; ifup wg-rest"
+- name: derive publickey
+  command: bash -c "wg pubkey < {{ wireguard-rest.app.secret_key_file }} > {{ wireguard-rest.app.publickey_rest}} "
+- name: update webapp_db
+  become:  wireguard-rest
+  become_method: sudo
+  args:
+      chdir: /usr/local/wireguard-rest/lib
+  command: rake db:migrate RAILS_ENV=production
+- name: update wireguard_configuration
+  become:  wireguard-rest
+  become_method: sudo
+  args:
+      chdir: /usr/local/wireguard-rest/lib
+  command:  rake init:wg_conf RAILS_ENV=production

@@ -1,0 +1,9 @@
+[Interface]
+ListenPort = {{ wireguard_rest.port }}
+PrivateKey = <%= priv_key %>
+
+<% for peer in peers do %>
+[Peer]
+PublicKey = <%= peer.pubkey %>
+AllowedIPs = <%= peer.client_networks_str %>
+<% end %>

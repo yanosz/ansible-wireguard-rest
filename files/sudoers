@@ -1,0 +1,1 @@
+wireguard-rest  ALL=(root) NOPASSWD: /usr/bin/setconf wg-rest /etc/wireguard/rest.conf
