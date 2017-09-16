@@ -32,6 +32,7 @@ wireguard_rest:
   netmask_ipv4: '255.255.248.0'
   server_ipv6: 'fd78:e474:9f6f:df64::1'
   netmask_ipv6: '64'
+  port: 1195
   client_ipv4_start: '172.27.128.2'
   client_ipv6_start: 'fd78:e474:9f6f:df64::1'
   app:
