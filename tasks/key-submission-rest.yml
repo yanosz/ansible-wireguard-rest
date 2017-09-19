@@ -24,18 +24,41 @@
   - update webapp_db
   - restart wireguard-rest
 
-- name: "Register systemd service and socket"
-  copy:
-    src: files/{{ item }}
-    dest: /etc/systemd/system/{{ item }}
-    owner: root
-    group: root
-  with_items:
-  - wireguard-rest.service
-  - wireguard-rest.socket
+- name: "Configure /usr/local/wireguard-rest/lib/conf/rest.conf.erb"
+  template:
+    src: files/rest.conf.erb.j2
+    dest: /usr/local/wireguard-rest/lib/config/rest.conf.erb
+    owner: wireguard-rest
+    group: wireguard-rest
+    mode: '0644'
   notify:
   - update wireguard_configuration
   - reload wireguard-rest
+
+- command: 'rake -f /usr/local/wireguard-rest/lib/Rakefile secret'
+  register: wireguard_rest_app_secret
+
+- name: "Register systemd socket"
+  copy:
+    src: files/wireguard-rest.socket
+    dest: /etc/systemd/system/wireguard-rest.socket
+    owner: root
+    group: root
+  notify:
+  - update wireguard_configuration
+  - reload wireguard-rest
+
+- name: "Register systemd service"
+  template:
+    src: files/wireguard-rest.service.j2
+    dest:  /etc/systemd/system/wireguard-rest.service
+    owner: root
+    group: root
+    mode: 0600
+  notify:
+  - update wireguard_configuration
+  - reload wireguard-rest
+
 
 - name: "Configure: app.yml"
   template:
@@ -43,17 +66,6 @@
     dest: /usr/local/wireguard-rest/lib/config/app.yml
     owner: root
     group: root
-    mode: '0644'
-  notify:
-  - update wireguard_configuration
-  - reload wireguard-rest
-
-- name: "Configure /usr/local/wireguard-rest/lib/conf/rest.conf.erb"
-  copy:
-    src: files/rest.conf.erb
-    dest: /usr/local/wireguard-rest/lib/config/rest.conf.erb
-    owner: wireguard-rest
-    group: wireguard-rest
     mode: '0644'
   notify:
   - update wireguard_configuration
