@@ -1,3 +1,5 @@
+# Ansible generated file - Role: wireguard-exit. Wireguard Interface connected to an HTTP/Rest CRUD endpoint
+
 auto wg-rest
 iface wg-rest inet static
   address {{ wireguard_rest.server_ipv4 }}
